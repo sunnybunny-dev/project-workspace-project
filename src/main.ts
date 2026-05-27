@@ -1,0 +1,10 @@
+import './assets/main.css' // <-- Make sure this line is at the very top!
+
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+import App from './App.vue'
+
+const app = createApp(App)
+
+app.use(createPinia())
+app.mount('#app')
