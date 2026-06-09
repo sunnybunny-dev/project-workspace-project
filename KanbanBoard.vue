@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { watch } from 'vue'
 import { useAuth } from './useAuth'
 import { useKanban } from './useKanban'
-import { watch } from 'vue'
 
 const { 
   currentUser, 
@@ -15,6 +15,16 @@ const {
   handleRegister,
   logout 
 } = useAuth()
+
+function toggleMode() {
+  isRegisterMode.value = !isRegisterMode.value
+  authError.value = ''
+  usernameInput.value = ''
+  passwordInput.value = ''
+  emailInput.value = ''
+  fullNameInput.value = ''
+}
+
 const {
   newTaskTitle,
   newTaskPriority,
@@ -57,368 +67,333 @@ watch(currentUser, (newUser) => {
   }
 }, { immediate: true })
 </script>
+
 <template>
-  <div class="kanban-board">
-    
-    <div class="theme-picker">
-      <img src="/src/assets/icons/sun.svg" class="icon" />
-      <label>Theme:</label>
-    </div>
+  <div class="app-wrapper">
 
-    <button @click="addTask" class="btn-add">
-      <img src="/src/assets/icons/magic.svg" class="icon" /> Add Task
-    </button>
+    <!-- =====================================================
+         VIEW A: Authentication Screen (Logged Out)
+         ===================================================== -->
+    <div v-if="!currentUser" class="auth-container">
+      <div class="split-auth-card">
 
-    <div v-for="task in tasks" :key="task.id" class="task-card">
-      <h3>{{ task.title }}</h3>
-      
-      <button @click="deleteTask(task.id)" class="btn-delete">
-        <img src="/src/assets/icons/flower.svg" class="icon" />
-      </button>
+        <!-- Left: Graphic / Bridge Panel -->
+        <div class="auth-graphic-side">
+          <div class="graphic-content">
+            <h2 v-if="isRegisterMode">Already have an account?</h2>
+            <h2 v-else>New to the workspace?</h2>
 
-      <button @click="openSubTaskInput(task.id)">
-        <img src="/src/assets/icons/mint.svg" class="icon" />
-      </button>
-    </div>
-    
-  </div> <div v-if="!currentUser" class="auth-container">
-    <div class="split-auth-card">
-      <div class="form-box">
-        <div class="auth-brand-header">
-          <span class="logo-emoji">🌸</span>
-        </div>
-      </div>
-    </div>
-  </div>
+            <p v-if="isRegisterMode">Access your board profiles instantly by signing into your dashboard environment.</p>
+            <p v-else>Create a custom profile layout to manage tasks and visual themes seamlessly.</p>
 
-</template>
-
-        <!-- Mode 1: Register Account Layout -->
-        <div v-if="isRegisterMode" class="form-content">
-          <h3>Register Now</h3>
-          <p class="subtitle">Set up a workspace profile to get started.</p>
-
-          <form @submit.prevent="handleRegister" class="auth-form">
-            <div class="input-group">
-              <label>FULL NAME</label>
-              <input v-model="fullNameInput" type="text" placeholder="e.g. Sunny Bunny" />
-            </div>
-
-            <div class="input-group">
-              <label>PROFILE USERNAME *</label>
-              <input v-model="usernameInput" type="text" placeholder="Choose a username" required />
-            </div>
-
-            <div class="input-group">
-              <label>EMAIL ADDRESS *</label>
-              <input v-model="emailInput" type="email" placeholder="name@example.com" required />
-            </div>
-
-            <div class="input-group">
-              <label>PASSWORD</label>
-              <input v-model="passwordInput" type="password" placeholder="••••••••" autocomplete="new-password" />
-            </div>
-
-            <p v-if="authError" class="error-msg">⚠️ {{ authError }}</p>
-            <button type="submit" class="btn-submit">Create Account</button>
-          </form>
+            <button @click="toggleMode" class="btn-toggle-mode">
+              {{ isRegisterMode ? 'Sign In Instead' : 'Register / Sign Up' }}
+            </button>
+          </div>
         </div>
 
-        <!-- Mode 2: Existing Login Layout -->
-        <div v-else class="form-content">
-          <h3>Welcome Back</h3>
-          <p class="subtitle">Sign in directly to access your dashboards.</p>
+        <!-- Right: Form Panel -->
+        <div class="form-box">
+          <div class="auth-brand-header">
+            <span class="logo-emoji">🌸</span>
+            <h2>OrchidTask</h2>
+          </div>
 
-          <form @submit.prevent="login" class="auth-form">
-            <div class="input-group">
-              <label>PROFILE USERNAME</label>
-              <input v-model="usernameInput" type="text" placeholder="e.g. sunnybunny" required autocomplete="username" />
-            </div>
+          <!-- Mode 1: Register -->
+          <div v-if="isRegisterMode" class="form-content">
+            <h3>Register Now</h3>
+            <p class="subtitle">Set up a workspace profile to get started.</p>
 
-            <div class="input-group">
-              <label>PASSWORD</label>
-              <input v-model="passwordInput" type="password" placeholder="••••••••" autocomplete="current-password" />
-            </div>
+            <form @submit.prevent="handleRegister" class="auth-form">
+              <div class="input-group">
+                <label>FULL NAME</label>
+                <input v-model="fullNameInput" type="text" placeholder="e.g. Sunny Bunny" />
+              </div>
+              <div class="input-group">
+                <label>PROFILE USERNAME *</label>
+                <input v-model="usernameInput" type="text" placeholder="Choose a username" required />
+              </div>
+              <div class="input-group">
+                <label>EMAIL ADDRESS *</label>
+                <input v-model="emailInput" type="email" placeholder="name@example.com" required />
+              </div>
+              <div class="input-group">
+                <label>PASSWORD</label>
+                <input v-model="passwordInput" type="password" placeholder="••••••••" autocomplete="new-password" />
+              </div>
+              <p v-if="authError" class="error-msg">⚠️ {{ authError }}</p>
+              <button type="submit" class="btn-submit">Create Account</button>
+            </form>
+          </div>
 
-            <p v-if="authError" class="error-msg">⚠️ {{ authError }}</p>
-            <button type="submit" class="btn-submit">Enter Workspace</button>
-          </form>
+          <!-- Mode 2: Login -->
+          <div v-else class="form-content">
+            <h3>Welcome Back</h3>
+            <p class="subtitle">Sign in directly to access your dashboards.</p>
+
+            <form @submit.prevent="login" class="auth-form">
+              <div class="input-group">
+                <label>PROFILE USERNAME</label>
+                <input v-model="usernameInput" type="text" placeholder="e.g. sunnybunny" required autocomplete="username" />
+              </div>
+              <div class="input-group">
+                <label>PASSWORD</label>
+                <input v-model="passwordInput" type="password" placeholder="••••••••" autocomplete="current-password" />
+              </div>
+              <p v-if="authError" class="error-msg">⚠️ {{ authError }}</p>
+              <button type="submit" class="btn-submit">Enter Workspace</button>
+            </form>
+          </div>
+
+        </div><!-- end .form-box -->
+      </div><!-- end .split-auth-card -->
+    </div><!-- end .auth-container -->
+
+    <!-- =====================================================
+         VIEW B: Kanban Dashboard (Logged In)
+         ===================================================== -->
+    <div v-else :class="['theme-wrapper', currentTheme]">
+
+      <!-- Global Navigation Bar -->
+      <header class="app-navbar">
+        <div class="nav-brand">
+          <span class="brand-icon">🌸</span>
+          <span class="brand-text">OrchidTask</span>
         </div>
-      </div>
 
-      <!-- Static Column Panel: Information & Bridge -->
-      <div class="auth-graphic-side">
-        <div class="graphic-content">
-          <h2 v-if="isRegisterMode">Already have an account?</h2>
-          <h2 v-else>New to the workspace?</h2>
-          
-          <p v-if="isRegisterMode">Access your board profiles instantly by signing into your dashboard environment.</p>
-          <p v-else">Create a custom profile layout to manage tasks and visual themes seamlessly.</p>
-          
-          <button @click="isRegisterMode = !isRegisterMode" class="btn-toggle-mode">
-            {{ isRegisterMode ? 'Sign In Instead' : 'Register / Sign Up' }}
-          </button>
-        </div>
-      </div>
+        <nav class="nav-links">
+          <a href="#" class="active">Workspace</a>
 
-    </div>
-  </div>
+          <div class="theme-picker">
+            <label>Theme:</label>
+            <select :value="currentTheme" @change="changeTheme(($event.target as HTMLSelectElement).value)">
+              <option value="space-dark">🌌 Space Dark</option>
+              <option value="cyber-magenta">🔮 Cyber Magenta</option>
+              <option value="sunny-light">☀️ Sunny Light</option>
+              <option value="mint-fresh">🌿 Mint Fresh</option>
+            </select>
+          </div>
 
-  <!-- 🌌 VIEW B: Interactive Kanban Dashboard (Logged In) -->
-  <div v-else :class="['theme-wrapper', currentTheme]">
-    <!-- Application Global Navigation Bar -->
-    <header class="app-navbar">
-      <div class="nav-brand">
-        <span class="brand-icon">🌸</span>
-        <span class="brand-text">OrchidTask</span>
-      </div>
-
-      <nav class="nav-links">
-        <a href="#" class="active">Workspace</a>
-        
-        <div class="theme-picker">
-          <label>Theme:</label>
-          <select :value="currentTheme" @change="changeTheme(($event.target as HTMLSelectElement).value)">
-            <option value="space-dark">🌌 Space Dark</option>
-            <option value="cyber-magenta">🔮 Cyber Magenta</option>
-            <option value="sunny-light">☀️ Sunny Light</option>
-            <option value="mint-fresh">🌿 Mint Fresh</option>
-          </select>
-        </div>
-
-        <a href="#" @click.prevent="logout" class="logout-link">Switch Profile (Logout)</a>
-      </nav>
-    </header>
-
-    <!-- Core Kanban Workspace Layout Content -->
-    <main class="kanban-container">
-      <header class="board-header">
-        <h1>{{ currentUser.username }}'s Project Board</h1>
+          <a href="#" @click.prevent="logout" class="logout-link">Switch Profile (Logout)</a>
+        </nav>
       </header>
 
-      <!-- Task Creator Entry Bar Layout -->
-      <section class="task-creator">
-        <input 
-          v-model="newTaskTitle" 
-          type="text" 
-          placeholder="Type a new task name..." 
-          @keyup.enter="addTask"
-        />
-        <select v-model="newTaskPriority">
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-        </select>
-        <button @click="addTask" class="btn-add">Add Task</button>
+      <!-- Core Kanban Workspace -->
+      <main class="kanban-container">
+        <header class="board-header">
+          <h1>{{ currentUser.username }}'s Project Board</h1>
+        </header>
 
-        <button 
-          @click="isPrioritySorted = !isPrioritySorted" 
-          :class="['btn-sort-toggle', { active: isPrioritySorted }]"
-          type="button"
-        >
-          {{ isPrioritySorted ? '⚡ Sorted by Priority' : '⏳ Sort by Priority' }}
-        </button>
-      </section>
+        <!-- Task Creator Bar -->
+        <section class="task-creator">
+          <input
+            v-model="newTaskTitle"
+            type="text"
+            placeholder="Type a new task name..."
+            @keyup.enter="addTask"
+          />
+          <select v-model="newTaskPriority">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+          <button @click="addTask" class="btn-add">Add Task</button>
 
-      <!-- The Core Triple-Column Dynamic Kanban Grid -->
-      <div class="kanban-grid">
-        
-        <!-- COLUMN 1: TO DO -->
-        <div 
-          class="column" 
-          :class="{ 'drag-over': activeDropZone === 'todo' }"
-          @dragover.prevent="onDragOver('todo')"
-          @dragleave="onDragLeave"
-          @drop="onDrop('todo')"
-        >
-          <div class="column-header">
-            <h2>TO DO</h2>
-            <span class="badge">{{ todoTasks.length }}</span>
-          </div>
-          
-          <div class="cards-list">
-            <div 
-              v-for="task in todoTasks" 
-              :key="task.id" 
-              class="task-card"
-              :class="`priority-${task.priority}`"
-              draggable="true"
-              @dragstart="onDragStart(task.id)"
-            >
-              <div class="card-main-row">
-                <div v-if="editingTaskId === task.id" class="edit-box">
-                  <input v-model="editingTitleValue" @keyup.enter="saveEdit(task)" type="text" />
-                  <button @click="saveEdit(task)">💾</button>
-                </div>
-                <p v-else @click="startEditing(task)" class="task-title">{{ task.title }}</p>
-                <button @click="deleteTask(task.id)" class="btn-delete">×</button>
-              </div>
+          <button
+            @click="isPrioritySorted = !isPrioritySorted"
+            :class="['btn-sort-toggle', { active: isPrioritySorted }]"
+            type="button"
+          >
+            {{ isPrioritySorted ? '⚡ Sorted by Priority' : '⏳ Sort by Priority' }}
+          </button>
+        </section>
 
-              <div class="subtasks-container">
-                <div v-for="sub in task.subtasks" :key="sub.id" class="subtask-item">
-                  <input type="checkbox" v-model="sub.isDone" />
-                  <div v-if="editingSubTaskId === sub.id" class="sub-edit-box">
-                    <input v-model="editingSubTextValue" @keyup.enter="saveSubEdit(sub)" type="text" />
+        <!-- Triple-Column Kanban Grid -->
+        <div class="kanban-grid">
+
+          <!-- COLUMN 1: TO DO -->
+          <div
+            class="column"
+            :class="{ 'drag-over': activeDropZone === 'todo' }"
+            @dragover.prevent="onDragOver('todo')"
+            @dragleave="onDragLeave"
+            @drop="onDrop('todo')"
+          >
+            <div class="column-header">
+              <h2>TO DO</h2>
+              <span class="badge">{{ todoTasks.length }}</span>
+            </div>
+            <div class="cards-list">
+              <div
+                v-for="task in todoTasks"
+                :key="task.id"
+                class="task-card"
+                :class="`priority-${task.priority}`"
+                draggable="true"
+                @dragstart="onDragStart(task.id)"
+              >
+                <div class="card-main-row">
+                  <div v-if="editingTaskId === task.id" class="edit-box">
+                    <input v-model="editingTitleValue" @keyup.enter="saveEdit(task)" type="text" />
+                    <button @click="saveEdit(task)">💾</button>
                   </div>
-                  <span v-else @click="startEditingSub(sub)" :class="{ done: sub.isDone }">{{ sub.text }}</span>
-                  <button @click="deleteSubTask(task, sub.id)" class="btn-sub-delete">×</button>
+                  <p v-else @click="startEditing(task)" class="task-title">{{ task.title }}</p>
+                  <button @click="deleteTask(task.id)" class="btn-delete">×</button>
                 </div>
-
-                <div v-if="task.subtasks.length > 0" class="progress-bar-wrapper">
-                  <div class="progress-bar" :style="{ width: getProgressPercent(task) + '%' }"></div>
-                  <span class="progress-text">{{ getProgressPercent(task) }}%</span>
+                <div class="subtasks-container">
+                  <div v-for="sub in task.subtasks" :key="sub.id" class="subtask-item">
+                    <input type="checkbox" v-model="sub.isDone" />
+                    <div v-if="editingSubTaskId === sub.id" class="sub-edit-box">
+                      <input v-model="editingSubTextValue" @keyup.enter="saveSubEdit(sub)" type="text" />
+                    </div>
+                    <span v-else @click="startEditingSub(sub)" :class="{ done: sub.isDone }">{{ sub.text }}</span>
+                    <button @click="deleteSubTask(task, sub.id)" class="btn-sub-delete">×</button>
+                  </div>
+                  <div v-if="task.subtasks.length > 0" class="progress-bar-wrapper">
+                    <div class="progress-bar" :style="{ width: getProgressPercent(task) + '%' }"></div>
+                    <span class="progress-text">{{ getProgressPercent(task) }}%</span>
+                  </div>
+                  <div v-if="currentlyAddingSubToTaskId === task.id" class="subtask-input-row">
+                    <input v-model="newSubTaskTextValue" placeholder="Add subtask..." @keyup.enter="submitSubTask(task)" type="text" />
+                    <button @click="submitSubTask(task)">Add</button>
+                    <button @click="cancelSubTaskInput" class="cancel">Cancel</button>
+                  </div>
+                  <button v-else @click="openSubTaskInput(task.id)" class="btn-trigger-sub">+ Subtask</button>
                 </div>
-
-                <div v-if="currentlyAddingSubToTaskId === task.id" class="subtask-input-row">
-                  <input v-model="newSubTaskTextValue" placeholder="Add subtask..." @keyup.enter="submitSubTask(task)" type="text" />
-                  <button @click="submitSubTask(task)">Add</button>
-                  <button @click="cancelSubTaskInput" class="cancel">Cancel</button>
-                </div>
-                <button v-else @click="openSubTaskInput(task.id)" class="btn-trigger-sub">+ Subtask</button>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- COLUMN 2: IN PROGRESS -->
-        <div 
-          class="column" 
-          :class="{ 'drag-over': activeDropZone === 'in-progress' }"
-          @dragover.prevent="onDragOver('in-progress')"
-          @dragleave="onDragLeave"
-          @drop="onDrop('in-progress')"
-        >
-          <div class="column-header">
-            <h2>IN PROGRESS</h2>
-            <span class="badge">{{ inProgressTasks.length }}</span>
-          </div>
-          
-          <div class="cards-list">
-            <div 
-              v-for="task in inProgressTasks" 
-              :key="task.id" 
-              class="task-card"
-              :class="`priority-${task.priority}`"
-              draggable="true"
-              @dragstart="onDragStart(task.id)"
-            >
-              <div class="card-main-row">
-                <div v-if="editingTaskId === task.id" class="edit-box">
-                  <input v-model="editingTitleValue" @keyup.enter="saveEdit(task)" type="text" />
-                  <button @click="saveEdit(task)">💾</button>
-                </div>
-                <p v-else @click="startEditing(task)" class="task-title">{{ task.title }}</p>
-                <button @click="deleteTask(task.id)" class="btn-delete">×</button>
-              </div>
-
-              <div class="subtasks-container">
-                <div v-for="sub in task.subtasks" :key="sub.id" class="subtask-item">
-                  <input type="checkbox" v-model="sub.isDone" />
-                  <div v-if="editingSubTaskId === sub.id" class="sub-edit-box">
-                    <input v-model="editingSubTextValue" @keyup.enter="saveSubEdit(sub)" type="text" />
+          <!-- COLUMN 2: IN PROGRESS -->
+          <div
+            class="column"
+            :class="{ 'drag-over': activeDropZone === 'in-progress' }"
+            @dragover.prevent="onDragOver('in-progress')"
+            @dragleave="onDragLeave"
+            @drop="onDrop('in-progress')"
+          >
+            <div class="column-header">
+              <h2>IN PROGRESS</h2>
+              <span class="badge">{{ inProgressTasks.length }}</span>
+            </div>
+            <div class="cards-list">
+              <div
+                v-for="task in inProgressTasks"
+                :key="task.id"
+                class="task-card"
+                :class="`priority-${task.priority}`"
+                draggable="true"
+                @dragstart="onDragStart(task.id)"
+              >
+                <div class="card-main-row">
+                  <div v-if="editingTaskId === task.id" class="edit-box">
+                    <input v-model="editingTitleValue" @keyup.enter="saveEdit(task)" type="text" />
+                    <button @click="saveEdit(task)">💾</button>
                   </div>
-                  <span v-else @click="startEditingSub(sub)" :class="{ done: sub.isDone }">{{ sub.text }}</span>
-                  <button @click="deleteSubTask(task, sub.id)" class="btn-sub-delete">×</button>
+                  <p v-else @click="startEditing(task)" class="task-title">{{ task.title }}</p>
+                  <button @click="deleteTask(task.id)" class="btn-delete">×</button>
                 </div>
-
-                <div v-if="task.subtasks.length > 0" class="progress-bar-wrapper">
-                  <div class="progress-bar" :style="{ width: getProgressPercent(task) + '%' }"></div>
-                  <span class="progress-text">{{ getProgressPercent(task) }}%</span>
+                <div class="subtasks-container">
+                  <div v-for="sub in task.subtasks" :key="sub.id" class="subtask-item">
+                    <input type="checkbox" v-model="sub.isDone" />
+                    <div v-if="editingSubTaskId === sub.id" class="sub-edit-box">
+                      <input v-model="editingSubTextValue" @keyup.enter="saveSubEdit(sub)" type="text" />
+                    </div>
+                    <span v-else @click="startEditingSub(sub)" :class="{ done: sub.isDone }">{{ sub.text }}</span>
+                    <button @click="deleteSubTask(task, sub.id)" class="btn-sub-delete">×</button>
+                  </div>
+                  <div v-if="task.subtasks.length > 0" class="progress-bar-wrapper">
+                    <div class="progress-bar" :style="{ width: getProgressPercent(task) + '%' }"></div>
+                    <span class="progress-text">{{ getProgressPercent(task) }}%</span>
+                  </div>
+                  <div v-if="currentlyAddingSubToTaskId === task.id" class="subtask-input-row">
+                    <input v-model="newSubTaskTextValue" placeholder="Add subtask..." @keyup.enter="submitSubTask(task)" type="text" />
+                    <button @click="submitSubTask(task)">Add</button>
+                    <button @click="cancelSubTaskInput" class="cancel">Cancel</button>
+                  </div>
+                  <button v-else @click="openSubTaskInput(task.id)" class="btn-trigger-sub">+ Subtask</button>
                 </div>
-
-                <div v-if="currentlyAddingSubToTaskId === task.id" class="subtask-input-row">
-                  <input v-model="newSubTaskTextValue" placeholder="Add subtask..." @keyup.enter="submitSubTask(task)" type="text" />
-                  <button @click="submitSubTask(task)">Add</button>
-                  <button @click="cancelSubTaskInput" class="cancel">Cancel</button>
-                </div>
-                <button v-else @click="openSubTaskInput(task.id)" class="btn-trigger-sub">+ Subtask</button>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- COLUMN 3: DONE -->
-        <div 
-          class="column" 
-          :class="{ 'drag-over': activeDropZone === 'done' }"
-          @dragover.prevent="onDragOver('done')"
-          @dragleave="onDragLeave"
-          @drop="onDrop('done')"
-        >
-          <div class="column-header">
-            <h2>DONE</h2>
-            <span class="badge">{{ doneTasks.length }}</span>
-          </div>
-          
-          <div class="cards-list">
-            <div 
-              v-for="task in doneTasks" 
-              :key="task.id" 
-              class="task-card"
-              :class="`priority-${task.priority}`"
-              draggable="true"
-              @dragstart="onDragStart(task.id)"
-            >
-              <div class="card-main-row">
-                <div v-if="editingTaskId === task.id" class="edit-box">
-                  <input v-model="editingTitleValue" @keyup.enter="saveEdit(task)" type="text" />
-                  <button @click="saveEdit(task)">💾</button>
-                </div>
-                <p v-else @click="startEditing(task)" class="task-title">{{ task.title }}</p>
-                <button @click="deleteTask(task.id)" class="btn-delete">×</button>
-              </div>
-
-              <div class="subtasks-container">
-                <div v-for="sub in task.subtasks" :key="sub.id" class="subtask-item">
-                  <input type="checkbox" v-model="sub.isDone" />
-                  <div v-if="editingSubTaskId === sub.id" class="sub-edit-box">
-                    <input v-model="editingSubTextValue" @keyup.enter="saveSubEdit(sub)" type="text" />
+          <!-- COLUMN 3: DONE -->
+          <div
+            class="column"
+            :class="{ 'drag-over': activeDropZone === 'done' }"
+            @dragover.prevent="onDragOver('done')"
+            @dragleave="onDragLeave"
+            @drop="onDrop('done')"
+          >
+            <div class="column-header">
+              <h2>DONE</h2>
+              <span class="badge">{{ doneTasks.length }}</span>
+            </div>
+            <div class="cards-list">
+              <div
+                v-for="task in doneTasks"
+                :key="task.id"
+                class="task-card"
+                :class="`priority-${task.priority}`"
+                draggable="true"
+                @dragstart="onDragStart(task.id)"
+              >
+                <div class="card-main-row">
+                  <div v-if="editingTaskId === task.id" class="edit-box">
+                    <input v-model="editingTitleValue" @keyup.enter="saveEdit(task)" type="text" />
+                    <button @click="saveEdit(task)">💾</button>
                   </div>
-                  <span v-else @click="startEditingSub(sub)" :class="{ done: sub.isDone }">{{ sub.text }}</span>
-                  <button @click="deleteSubTask(task, sub.id)" class="btn-sub-delete">×</button>
+                  <p v-else @click="startEditing(task)" class="task-title">{{ task.title }}</p>
+                  <button @click="deleteTask(task.id)" class="btn-delete">×</button>
                 </div>
-
-                <div v-if="task.subtasks.length > 0" class="progress-bar-wrapper">
-                  <div class="progress-bar" :style="{ width: getProgressPercent(task) + '%' }"></div>
-                  <span class="progress-text">{{ getProgressPercent(task) }}%</span>
+                <div class="subtasks-container">
+                  <div v-for="sub in task.subtasks" :key="sub.id" class="subtask-item">
+                    <input type="checkbox" v-model="sub.isDone" />
+                    <div v-if="editingSubTaskId === sub.id" class="sub-edit-box">
+                      <input v-model="editingSubTextValue" @keyup.enter="saveSubEdit(sub)" type="text" />
+                    </div>
+                    <span v-else @click="startEditingSub(sub)" :class="{ done: sub.isDone }">{{ sub.text }}</span>
+                    <button @click="deleteSubTask(task, sub.id)" class="btn-sub-delete">×</button>
+                  </div>
+                  <div v-if="task.subtasks.length > 0" class="progress-bar-wrapper">
+                    <div class="progress-bar" :style="{ width: getProgressPercent(task) + '%' }"></div>
+                    <span class="progress-text">{{ getProgressPercent(task) }}%</span>
+                  </div>
+                  <div v-if="currentlyAddingSubToTaskId === task.id" class="subtask-input-row">
+                    <input v-model="newSubTaskTextValue" placeholder="Add subtask..." @keyup.enter="submitSubTask(task)" type="text" />
+                    <button @click="submitSubTask(task)">Add</button>
+                    <button @click="cancelSubTaskInput" class="cancel">Cancel</button>
+                  </div>
+                  <button v-else @click="openSubTaskInput(task.id)" class="btn-trigger-sub">+ Subtask</button>
                 </div>
-
-                <div v-if="currentlyAddingSubToTaskId === task.id" class="subtask-input-row">
-                  <input v-model="newSubTaskTextValue" placeholder="Add subtask..." @keyup.enter="submitSubTask(task)" type="text" />
-                  <button @click="submitSubTask(task)">Add</button>
-                  <button @click="cancelSubTaskInput" class="cancel">Cancel</button>
-                </div>
-                <button v-else @click="openSubTaskInput(task.id)" class="btn-trigger-sub">+ Subtask</button>
               </div>
             </div>
           </div>
-        </div>
 
-      </div>
-    </main>
-  </div>
+        </div><!-- end .kanban-grid -->
+      </main>
+    </div><!-- end .theme-wrapper -->
+
+  </div><!-- end .app-wrapper -->
 </template>
 
 <style scoped>
 .icon {
   width: 18px;
   height: 18px;
-  /* Adjust brightness to match theme text colors */
   filter: brightness(0) invert(1); 
   vertical-align: middle;
   margin-right: 8px;
 }
 
-/* For your sunny-light theme, invert the filter so icons are dark */
 .sunny-light .icon {
   filter: brightness(0) invert(0);
 }
-/* 1. Global Font Application */
+
 *, body, h1, h2, h3, .nav-links, .board-header, .column-title, .task-card, button, select, input {
   font-family: 'Outfit', sans-serif !important;
 }
 
-/* 2. Premium Column Styling */
 .column {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(20px);
@@ -431,7 +406,6 @@ watch(currentUser, (newUser) => {
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
-/* 3. Typography Hierarchy */
 .column-title {
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -442,8 +416,8 @@ watch(currentUser, (newUser) => {
   font-weight: 400;
 }
 
-/* 4. Task Card Premium Polish */
 .task-card {
+  font-family: 'Outfit', sans-serif;
   font-weight: 300;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -459,8 +433,9 @@ watch(currentUser, (newUser) => {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
   background: rgba(255, 255, 255, 0.06);
 }
+
 /* ==========================================================================
-   🎨 COMPREHENSIVE THEME CORES (CSS Custom Variable Palettes)
+   THEME CORES
    ========================================================================== */
 .space-dark {
   --bg-gradient: linear-gradient(135deg, #0f0b1e 0%, #2e1045 100%);
@@ -513,7 +488,7 @@ watch(currentUser, (newUser) => {
 }
 
 /* ==========================================================================
-   🚪 SPLIT VIEW AUTHENTICATION LAYER STYLES
+   AUTHENTICATION STYLES
    ========================================================================== */
 .auth-container {
   min-height: 100vh;
@@ -541,7 +516,6 @@ watch(currentUser, (newUser) => {
   overflow: hidden;
 }
 
-/* Updated sliding form box segment */
 .form-box { 
   position: absolute; 
   right: 0; 
@@ -650,7 +624,6 @@ watch(currentUser, (newUser) => {
 
 .btn-submit:hover { opacity: 0.92; }
 
-/* Left Column Graphic Segment: Pink and Purple Theme Bridge */
 .auth-graphic-side {
   position: absolute;
   left: 0;
@@ -716,7 +689,7 @@ watch(currentUser, (newUser) => {
 }
 
 /* ==========================================================================
-   🌌 DASHBOARD CONTENT LAYOUT STYLES
+   DASHBOARD STYLES
    ========================================================================== */
 .app-navbar {
   display: flex;
@@ -924,7 +897,7 @@ watch(currentUser, (newUser) => {
 }
 
 .task-card {
-font-family: 'Outfit', sans-serif;
+  font-family: 'Outfit', sans-serif;
   font-weight: 300;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
