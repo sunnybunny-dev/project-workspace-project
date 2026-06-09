@@ -1036,4 +1036,15 @@ watch(currentUser, (newUser) => {
 .edit-box input, .sub-edit-box input {
   flex: 1; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; padding: 2px 6px;
 }
+.kanban-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
+
+@media (min-width: 768px) {
+  .kanban-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
 </style>
