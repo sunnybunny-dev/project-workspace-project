@@ -841,13 +841,6 @@ watch(currentUser, (newUser) => {
   box-shadow: 0 0 15px rgba(244, 114, 182, 0.25);
 }
 
-.kanban-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 25px;
-  align-items: start;
-}
-
 .column {
   background: var(--card-bg);
   backdrop-filter: blur(20px);
@@ -1036,21 +1029,18 @@ watch(currentUser, (newUser) => {
 .edit-box input, .sub-edit-box input {
   flex: 1; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; padding: 2px 6px;
 }
-/* Ensure the container fills the screen width, not more */
+/* --- Final Responsive Fix --- */
 .kanban-grid {
   display: grid;
-  grid-template-columns: 1fr; /* 1 column on mobile */
+  grid-template-columns: 1fr;
   gap: 15px;
   width: 100%;
-  max-width: 100%; /* Prevents horizontal overflow */
-  padding: 10px;
-  box-sizing: border-box; /* Crucial: ensures padding doesn't push width out */
 }
 
-/* Tablet and Desktop: 3 columns */
 @media (min-width: 768px) {
   .kanban-grid {
     grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
   }
 }
 </style>
